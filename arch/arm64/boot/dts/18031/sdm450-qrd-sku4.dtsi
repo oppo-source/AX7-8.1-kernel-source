@@ -1,0 +1,518 @@
+/*
+ * Copyright (c) 2018, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "msm8953-qrd.dtsi"
+#include "msm8953-mdss-panels.dtsi"
+/*#ifdef VENDOR_EDIT*/
+/*added by houyujun@Camera 20180504 for camera*/
+#include "msm8953-camera-sensor-qrd.dtsi"
+/*#endif*/
+
+&qusb_phy {
+	qcom,qusb-phy-init-seq = <0x78 0x80
+				0xb3 0x84
+				0x83 0x88
+				0xc7 0x8c
+				0x14 0x9c
+				0x30 0x08
+				0x79 0x0c
+				0x21 0x10
+				0x00 0x90
+				0x9f 0x1c
+				0x00 0x18>;
+};
+
+//#ifdef VENDOR_EDIT
+//Ling.Guo@PSW.MM.Display.LCD.Machine, 2018/04/06,add for lcd driver
+&i2c_2 {
+    ti_lm3697_bl@36 {
+            compatible = "lm3697";
+            reg = <0x36>;
+            ti,bl-enable-gpio = <&tlmm 46 0x00>;
+    };
+};
+//#endif VENDOR_EDIT
+
+&i2c_3 {
+    //#ifdef VENDOR_EDIT
+	//MingQiang.Guo@BSP.group 2018-04-07 add for enable i2c_3 for tp
+	status = "okay";
+	nova_nt36525@62 {
+		compatible = "nova-nt36525";
+		reg = <0x62>;
+		status = "okay";
+		chip-name = "NT36525";
+
+		interrupt-parent = <&tlmm>;
+		interrupts = <65 0x2001>;
+		irq-gpio = <&tlmm 65 0x2002>;
+
+		pinctrl-names = "active", "suspend";
+		pinctrl-0 = <&ts_int_active &ts_reset_active>;
+		pinctrl-1 = <&ts_int_suspend &ts_reset_suspend>;
+
+		touchpanel,max-num-support = <10>;
+		touchpanel,tx-rx-num = <18 32>;
+		touchpanel,panel-coords = <720 1520>;
+		touchpanel,display-coords = <720 1520>;
+
+		incell_screen;
+		edge_limit_support;
+		black_gesture_support;
+		charger_pump_support;
+		esd_handle_support;
+		//spurious_fingerprint_support;
+		//lcd_trigger_fp_check;
+		black_gesture_test_support;
+		fw_update_app_support;
+        drlimit_remove_support;
+
+		/*
+		*Virtual Key Config:
+		*1:touchpanel,button-type: <virtualkey_type  supportted_button-map>
+		*virtualkey_type:
+		*Type 1: using board_properties
+		*Type 2: using same IC (button zone&& touch zone are seprate)
+		*Type 3: using diffrent IC (button zone&& touch zone are seprate)
+		*Type 4: No need of virtual key process
+		*supportted_button-map:select|menu|home|back
+		*
+		*2:touchpanel,button-map
+		*type (X1,Y1)(X2,Y2)(X3,Y3)(Width_X,Hight_Y)--Only when button-type is 0
+		*/
+
+		touchpanel,button-type = <2 0x05>;
+	};
+    //#endif VENDOR_EDIT
+    //#ifdef VENDOR_EDIT
+        //Kun.Wang@BSP.group 2018-06-08 add for samsung tp
+        sec-s6d7at0@48 {
+		compatible = "sec-s6d7at0";
+		reg = <0x48>;
+		status = "okay";
+		chip-name = "S6D7AT0";
+
+		interrupt-parent = <&tlmm>;
+		interrupts = <65 0x2002>;
+		irq-gpio = <&tlmm 65 0x2002>;
+
+		pinctrl-names = "active", "suspend";
+		pinctrl-0 = <&ts_int_active &ts_reset_active>;
+		pinctrl-1 = <&ts_int_suspend &ts_reset_suspend>;
+
+		touchpanel,max-num-support = <10>;
+		touchpanel,tx-rx-num = <18 32>;
+		touchpanel,panel-coords = <720 1520>;
+		touchpanel,display-coords = <720 1520>;
+
+		incell_screen;
+		edge_limit_support;
+		black_gesture_support;
+		charger_pump_support;
+		esd_handle_support;
+		//spurious_fingerprint_support;
+		//lcd_trigger_fp_check;
+		black_gesture_test_support;
+		fw_update_app_support;
+                drlimit_remove_support;
+                sec_long_low_trigger;
+		game_switch_support;
+		smart_gesture_support;
+		/*
+		*Virtual Key Config:
+		*1:touchpanel,button-type: <virtualkey_type  supportted_button-map>
+		*virtualkey_type:
+		*Type 1: using board_properties
+		*Type 2: using same IC (button zone&& touch zone are seprate)
+		*Type 3: using diffrent IC (button zone&& touch zone are seprate)
+		*Type 4: No need of virtual key process
+		*supportted_button-map:select|menu|home|back
+		*
+		*2:touchpanel,button-map
+		*type (X1,Y1)(X2,Y2)(X3,Y3)(Width_X,Hight_Y)--Only when button-type is 0
+		*/
+
+		touchpanel,button-type = <2 0x05>;
+	};
+//#endif /*VENDOR_EDIT*/
+};
+
+//#ifdef VENDOR_EDIT
+/*MingQiang.Guo@BSP.TP.Function, 2018/04/11, add for novatek noflash*/
+&spi_3 {
+	/* Novatek device tree node */
+	status = "ok";
+	novatek@0 {
+		compatible = "novatek,nf_nt36525";
+		reg = <0>;
+		chip-name = "NF_NT36525";
+		status = "ok";
+
+		spi-max-frequency = <16000000>;	//4800000,9600000,15000000,19200000
+		reset-gpio = <&tlmm 99 0x00>;
+		interrupt-parent = <&tlmm>;
+		interrupts = <65 0x0>;
+		irq-gpio = <&tlmm 65 0x2002>;
+
+		touchpanel,max-num-support = <10>;
+		touchpanel,tx-rx-num = <18 32>;
+		touchpanel,panel-coords = <720 1520>;
+		touchpanel,display-coords = <720 1520>;
+        touchpanel,touchmajor-limit = <0 54>;
+
+		pinctrl-names = "active", "suspend";
+		pinctrl-0 = <&ts_int_active &ts_reset_active>;
+		pinctrl-1 = <&ts_int_suspend &ts_reset_suspend>;
+
+		incell_screen;
+		edge_limit_support;
+		black_gesture_support;
+		charger_pump_support;
+		esd_handle_support;
+		//spurious_fingerprint_support;
+		//lcd_trigger_fp_check;
+		black_gesture_test_support;
+		noflash_support;
+		smart_gesture_support;
+		fw_update_app_support;
+		game_switch_support;
+		drlimit_remove_support;
+		lcd_trigger_load_tp_fw_support;
+
+		touchpanel,button-type = <4>;
+	};
+
+    ilitek_spi@1 {
+        compatible = "tchip,ilitek";
+		reg = <1>;
+		chip-name = "NF_ILI9881H";
+		status = "ok";
+
+        poll_mode = <0>;
+        spi-max-frequency = <15000000>;
+
+        reset-gpio = <&tlmm 99 0x00>;
+        interrupt-parent = <&tlmm>;
+        interrupts = <65 0x0>;
+        irq-gpio = <&tlmm 65 0x2002>;
+
+		touchpanel,max-num-support = <10>;
+		touchpanel,tx-rx-num = <18 32>;
+
+		touchpanel,panel-coords = <720 1520>;
+		touchpanel,display-coords = <720 1520>;
+        touchpanel,touchmajor-limit = <0 54>;
+
+		pinctrl-names = "active", "suspend";
+		pinctrl-0 = <&ts_int_active &ts_reset_active>;
+		pinctrl-1 = <&ts_int_suspend &ts_reset_suspend>;
+
+		incell_screen;
+		edge_limit_support;
+		black_gesture_support;
+		charger_pump_support;
+		esd_handle_support;
+		//spurious_fingerprint_support;
+		//lcd_trigger_fp_check;
+		black_gesture_test_support;
+		noflash_support;
+		smart_gesture_support;
+		fw_update_app_support;
+		drlimit_remove_support;
+		lcd_trigger_load_tp_fw_support;
+		game_switch_support;
+        suspend_gesture_cfg;
+
+		/*
+		*Virtual Key Config:
+		*1:touchpanel,button-type: <virtualkey_type  supportted_button-map>
+		*virtualkey_type:
+		*Type 1: using board_properties
+		*Type 2: using same IC (button zone&& touch zone are seprate)
+		*Type 3: using diffrent IC (button zone&& touch zone are seprate)
+		*Type 4: No need of virtual key process
+		*supportted_button-map:select|menu|home|back
+		*
+		*2:touchpanel,button-map
+		*type (X1,Y1)(X2,Y2)(X3,Y3)(Width_X,Hight_Y)--Only when button-type is 0
+		*/
+
+		touchpanel,button-type = <4>;
+	};
+	   nt36672_spi@3 {
+		compatible = "novatek,nf_nt36672";
+		reg = <3>;
+		chip-name = "NT_NF36672";
+		status = "ok";
+
+		spi-max-frequency = <16000000>;	//4800000,9600000,15000000,19200000
+		reset-gpio = <&tlmm 99 0x00>;
+		interrupt-parent = <&tlmm>;
+		interrupts = <65 0x0>;
+		irq-gpio = <&tlmm 65 0x2006>;
+
+		touchpanel,max-num-support = <10>;
+		touchpanel,tx-rx-num = <18 32>;
+		touchpanel,panel-coords = <720 1520>;
+		touchpanel,display-coords = <720 1520>;
+        touchpanel,touchmajor-limit = <0 54>;
+
+		pinctrl-names = "active", "suspend";
+		pinctrl-0 = <&ts_int_active &ts_reset_active>;
+		pinctrl-1 = <&ts_int_suspend &ts_reset_suspend>;
+
+		incell_screen;
+		edge_limit_support;
+		black_gesture_support;
+		charger_pump_support;
+		esd_handle_support;
+		//spurious_fingerprint_support;
+		//lcd_trigger_fp_check;
+		black_gesture_test_support;
+		noflash_support;
+		smart_gesture_support;
+		fw_update_app_support;
+		game_switch_support;
+		drlimit_remove_support;
+		lcd_trigger_load_tp_fw_support;
+
+		touchpanel,button-type = <4>;
+	};
+
+};
+//#endif
+
+&int_codec {
+	status = "okay";
+	qcom,model = "msm8953-sku4-snd-card";
+	qcom,msm-micbias1-ext-cap;
+	qcom,msm-micbias2-ext-cap;
+	qcom,msm-mbhc-hphl-swh = <1>;
+//#ifndef VENDOR_EDIT
+/*Peikun@PSW.MM.AudioDriver.Machine, 2018/07/02, Modify for headsetmic*/
+//	qcom,msm-mbhc-gnd-swh = <0>;
+//#else /* VENDOR_EDIT */
+	qcom,msm-mbhc-gnd-swh = <1>;
+//#endif /* VENDOR_EDIT */
+	qcom,msm-hs-micbias-type = "external";
+};
+
+&wsa881x_i2c_f {
+	status = "okay";
+};
+
+&wsa881x_i2c_45 {
+	status = "okay";
+};
+
+&tlmm {
+	pmx_mdss {
+		mdss_dsi_active: mdss_dsi_active {
+			mux {
+				pins = "gpio61";
+			};
+			config {
+				pins = "gpio61";
+			};
+		};
+		mdss_dsi_suspend: mdss_dsi_suspend {
+			mux {
+				pins = "gpio61";
+			};
+			config {
+				pins = "gpio61";
+			};
+		};
+	};
+};
+
+&dsi_panel_pwr_supply {
+	qcom,panel-supply-entry@2 {
+		reg = <2>;
+		qcom,supply-name = "lab";
+		//#ifndef VENDOR_EDIT
+		//Ling.Guo@PSW.MM.Display.LCD.Machine, 2018/04/06,add for lcd driver
+		//qcom,supply-min-voltage = <4600000>;
+		//#else
+		qcom,supply-min-voltage = <6000000>;
+		//#endif VENDOR_EDIT
+		qcom,supply-max-voltage = <6000000>;
+		qcom,supply-enable-load = <100000>;
+		qcom,supply-disable-load = <100>;
+	};
+
+	qcom,panel-supply-entry@3 {
+		reg = <3>;
+		qcom,supply-name = "ibb";
+		//#ifndef VENDOR_EDIT
+		//Ling.Guo@PSW.MM.Display.LCD.Machine, 2018/04/06,add for lcd driver
+		//qcom,supply-min-voltage = <4600000>;
+		//#else
+		qcom,supply-min-voltage = <6000000>;
+		//#endif VENDOR_EDIT
+		qcom,supply-max-voltage = <6000000>;
+		qcom,supply-enable-load = <100000>;
+		qcom,supply-disable-load = <100>;
+		qcom,supply-post-on-sleep = <10>;
+	};
+};
+
+&mdss_mdp {
+	qcom,mdss-pref-prim-intf = "dsi";
+};
+
+&mdss_dsi {
+	hw-config = "single_dsi";
+};
+
+&mdss_dsi0 {
+	lab-supply = <&lcdb_ldo_vreg>;
+	ibb-supply = <&lcdb_ncp_vreg>;
+	/delete-property/ vdd-supply;
+	//#ifndef VENDOR_EDIT
+	//Ling.Guo@PSW.MM.Display.LCD.Machine, 2018/04/06,add for lcd driver
+	//qcom,dsi-pref-prim-pan = <&dsi_hx8399c_truly_vid>;
+	//#else
+	qcom,dsi-pref-prim-pan = <&dsi_oppo18031tianma_nt36525_720p_video>;
+	//#endif VENDOR_EDIT
+
+	//#ifndef VENDOR_EDIT
+	//Guohua.Zhong@PSW.Storage.Sdcard 2018/04/27, remove not use pm8953 gpio 4 which is used as ENIT_SD_OFF
+	//qcom,platform-bklight-en-gpio = <&pm8953_gpios 4 0>;
+	//#endif VENDOR_EDIT
+
+	pinctrl-names = "mdss_default", "mdss_sleep";
+	pinctrl-0 = <&mdss_dsi_active &mdss_te_active>;
+	pinctrl-1 = <&mdss_dsi_suspend &mdss_te_suspend>;
+	qcom,platform-te-gpio = <&tlmm 24 0>;
+	qcom,platform-reset-gpio = <&tlmm 61 0>;
+};
+
+&mdss_dsi1 {
+	status = "disabled";
+};
+
+//#ifdef VENDOR_EDIT
+//Ling.Guo@PSW.MM.Display.LCD.Machine, 2018/04/06,add for lcd driver
+&dsi_oppo18031tianma_nt36525_720p_video {
+	qcom,cont-splash-enabled;
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
+};
+
+&dsi_oppo18031auo_nt36525_720p_video {
+	qcom,cont-splash-enabled;
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
+};
+
+&dsi_oppo18031innolux_nt36525_720p_video {
+	qcom,cont-splash-enabled;
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
+};
+
+&dsi_oppo18031innolux_ili9881h_720p_video {
+	qcom,cont-splash-enabled;
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
+};
+
+&dsi_oppo18031boe_lsi7at0_720p_video {
+	qcom,cont-splash-enabled;
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
+};
+
+&dsi_oppo18031csot_nt36672a_720p_video {
+	qcom,cont-splash-enabled;
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
+};
+
+&dsi_oppo18031tianma_lsi7at0_720p_video {
+	qcom,cont-splash-enabled;
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
+};
+//#endif VENDOR_EDIT
+
+&dsi_hx8399c_truly_vid {
+	qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_pwm";
+	qcom,mdss-dsi-bl-pmic-pwm-frequency = <100>;
+	qcom,mdss-dsi-bl-pmic-bank-select = <0>;
+	qcom,mdss-dsi-pwm-gpio = <&pm8953_gpios 8 0>;
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
+};
+
+&soc {
+	gpio_keys {
+		compatible = "gpio-keys";
+		label = "gpio-keys";
+		//#ifndef VENDOR_EDIT  //wenxian.Zhen@PSW.BSP.POWER, 2018-05-02, Modify for volume key adjusting
+		pinctrl-names = "default";
+		//pinctrl-names = "tlmm_gpio_key_active","tlmm_gpio_key_suspend";
+		//#endif /* VENDOR_EDIT */
+		pinctrl-0 = <&gpio_key_active>;
+
+		//#ifndef VENDOR_EDIT   //Yunqing.Zeng@PSW.BSP.POWER, 2018-04-08, Modify for volume key adjusting
+		//vol_up {
+		//	label = "volume_up";
+		//	gpios = <&tlmm 85 GPIO_ACTIVE_LOW>;
+		//	linux,input-type = <1>;
+		//	linux,code = <115>;
+		//	gpio-key,wakeup;
+		//	debounce-interval = <15>;
+		//	linux,can-disable;
+		//};
+		//#else /* VENDOR_EDIT */
+		vol_down {
+			label = "volume_down";
+			gpios = <&tlmm 86 GPIO_ACTIVE_LOW>;
+			linux,input-type = <1>;
+			linux,code = <114>;
+			gpio-key,wakeup;
+			debounce-interval = <15>;
+			linux,can-disable;
+		};
+		//#endif /* VENDOR_EDIT */
+	};
+};
+
+&sdhc_2 {
+	cd-gpios = <&tlmm 133 0x0>;
+};
+
+&pmi632_vadc {
+	chan@4a {
+		qcom,scale-function = <22>;
+	};
+};
+
+//#ifndef VENDOR_EDIT
+//#Yunqing.Zeng@BSP.PWR.Basic 2018/05/18 Delete for oppo HW adjusting
+/*
+&soc {
+	gpio_keys {
+		camera_focus {
+			label = "camera_focus";
+			gpios = <&tlmm 87 0x1>;
+			linux,input-type = <1>;
+			linux,code = <0x210>;
+			debounce-interval = <15>;
+		};
+
+		camera_snapshot {
+			label = "camera_snapshot";
+			gpios = <&tlmm 86 0x1>;
+			linux,input-type = <1>;
+			linux,code = <0x2fe>;
+			debounce-interval = <15>;
+		};
+	};
+};*/
+//#endif
+

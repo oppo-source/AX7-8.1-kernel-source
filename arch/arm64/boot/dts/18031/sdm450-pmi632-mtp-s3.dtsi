@@ -1,0 +1,50 @@
+/*
+ * Copyright (c) 2018, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "msm8953-mtp.dtsi"
+
+&mdss_dsi0 {
+	qcom,dsi-pref-prim-pan = <&dsi_hx8399c_truly_vid>;
+	pinctrl-names = "mdss_default", "mdss_sleep";
+
+//#ifndef VENDOR_EDIT
+//Guohua.Zhong@PSW.Storage.Sdcard 2018/04/27, remove not use pm8953 gpio 4 which is used as ENIT_SD_OFF
+//	pinctrl-0 = <&mdss_dsi_active &mdss_te_active &bklt_en_default>;
+//#else
+	pinctrl-0 = <&mdss_dsi_active &mdss_te_active>;
+//#endif VENDOR_EDIT
+	pinctrl-1 = <&mdss_dsi_suspend &mdss_te_suspend>;
+
+//#ifndef VENDOR_EDIT
+//Guohua.Zhong@PSW.Storage.Sdcard 2018/04/27, remove not use pm8953 gpio 4 which is used as ENIT_SD_OFF
+//	qcom,platform-bklight-en-gpio = <&pm8953_gpios 4 0>;
+//#endif VENDOR_EDIT
+
+	lab-supply = <&lcdb_ldo_vreg>;
+	ibb-supply = <&lcdb_ncp_vreg>;
+
+};
+
+&dsi_truly_1080_vid {
+	qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_pwm";
+	qcom,mdss-dsi-bl-pmic-pwm-frequency = <100>;
+	qcom,mdss-dsi-bl-pmic-bank-select = <0>;
+	qcom,mdss-dsi-pwm-gpio = <&pm8953_gpios 8 0>;
+};
+
+&dsi_hx8399c_truly_vid {
+	qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_pwm";
+	qcom,mdss-dsi-bl-pmic-pwm-frequency = <100>;
+	qcom,mdss-dsi-bl-pmic-bank-select = <0>;
+	qcom,mdss-dsi-pwm-gpio = <&pm8953_gpios 8 0>;
+};

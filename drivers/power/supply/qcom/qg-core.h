@@ -1,0 +1,226 @@
+/* Copyright (c) 2018 The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+#ifndef __QG_CORE_H__
+#define __QG_CORE_H__
+
+#ifdef VENDOR_EDIT
+/* Yichun.Chen PSW.BSP.CHG  2018-05-04  Add for debug */
+#define qg_debug(fmt, ...) \
+        printk(KERN_NOTICE "[OPPO_CHG][%s]"fmt, __func__, ##__VA_ARGS__)
+
+#define qg_err(fmt, ...) \
+        printk(KERN_ERR "[OPPO_CHG][%s]"fmt, __func__, ##__VA_ARGS__)
+#endif
+#include <linux/kernel.h>
+#include "fg-alg.h"
+
+struct qg_batt_props {
+	const char		*batt_type_str;
+	int			float_volt_uv;
+	int			vbatt_full_mv;
+	int			fastchg_curr_ma;
+	int			qg_profile_version;
+};
+
+struct qg_irq_info {
+	const char		*name;
+	const irq_handler_t	handler;
+	const bool		wake;
+	int			irq;
+};
+
+struct qg_dt {
+	int			vbatt_empty_mv;
+	int			vbatt_empty_cold_mv;
+	int			vbatt_low_mv;
+	int			vbatt_low_cold_mv;
+	int			vbatt_cutoff_mv;
+	int			iterm_ma;
+	int			s2_fifo_length;
+	int			s2_vbat_low_fifo_length;
+	int			s2_acc_length;
+	int			s2_acc_intvl_ms;
+	int			ocv_timer_expiry_min;
+	int			ocv_tol_threshold_uv;
+	int			s3_entry_fifo_length;
+	int			s3_entry_ibat_ua;
+	int			s3_exit_ibat_ua;
+	int			delta_soc;
+	int			rbat_conn_mohm;
+	int			ignore_shutdown_soc_secs;
+	int			cold_temp_threshold;
+	bool			hold_soc_while_full;
+	bool			linearize_soc;
+	bool			cl_disable;
+	bool			cl_feedback_on;
+	bool			qg_ext_sense;
+};
+
+#ifdef VENDOR_EDIT
+/* Yichun.Chen PSW.BSP.CHG  2018-5-04  Add for anthenticate battery */
+enum oppo_battery_type {
+	NON_STD_BATT = 0,
+        OPPO_LG_BATT,
+	OPPO_SDI_BATT,
+	OPPO_ATL_BATT,
+};
+#endif
+
+struct qpnp_qg {
+	struct device		*dev;
+	struct pmic_revid_data	*pmic_rev_id;
+	struct regmap		*regmap;
+	struct qpnp_vadc_chip	*vadc_dev;
+	struct power_supply	*qg_psy;
+	struct class		*qg_class;
+	struct device		*qg_device;
+	struct cdev		qg_cdev;
+	dev_t			dev_no;
+	struct work_struct	udata_work;
+	struct work_struct	scale_soc_work;
+	struct work_struct	qg_status_change_work;
+	struct notifier_block	nb;
+	struct mutex		bus_lock;
+	struct mutex		data_lock;
+	struct mutex		soc_lock;
+	wait_queue_head_t	qg_wait_q;
+	struct votable		*awake_votable;
+	struct votable		*vbatt_irq_disable_votable;
+	struct votable		*fifo_irq_disable_votable;
+	struct votable		*good_ocv_irq_disable_votable;
+	u32			qg_base;
+
+	/* local data variables */
+	u32			batt_id_ohm;
+	struct qg_kernel_data	kdata;
+	struct qg_user_data	udata;
+	struct power_supply	*batt_psy;
+	struct power_supply	*usb_psy;
+	struct power_supply	*parallel_psy;
+
+	/* status variable */
+	u32			*debug_mask;
+	bool			qg_device_open;
+	bool			profile_loaded;
+	bool			battery_missing;
+	bool			data_ready;
+	bool			suspend_data;
+	bool			vbat_low;
+	bool			charge_done;
+	bool			parallel_enabled;
+	bool			usb_present;
+	bool			charge_full;
+	int			charge_status;
+	int			charge_type;
+	int			next_wakeup_ms;
+	u32			wa_flags;
+	u32			seq_no;
+	u32			charge_counter_uah;
+	ktime_t			last_user_update_time;
+	ktime_t			last_fifo_update_time;
+
+	/* soc params */
+	int			catch_up_soc;
+	int			maint_soc;
+	int			msoc;
+	int			pon_soc;
+	int			batt_soc;
+	int			cc_soc;
+	struct alarm		alarm_timer;
+	u32			sdam_data[SDAM_MAX];
+
+	/* DT */
+	struct qg_dt		dt;
+	struct qg_batt_props	bp;
+
+	/* capacity learning */
+	struct cap_learning	*cl;
+	/* charge counter */
+	struct cycle_counter	*counter;
+	char			counter_buf[BUCKET_COUNT * 8];
+
+#ifdef VENDOR_EDIT
+/* Yichun.Chen  PSW.BSP.CHG  2018-06-04  save soc */
+        /* Batt_info restore */
+	bool			soc_reporting_ready;
+	int			batt_info[6];
+	int			batt_info_id;
+	bool			batt_info_restore;
+	bool			*batt_range_ocv;
+	int			*batt_range_pct;
+#endif
+        
+#ifdef VENDOR_EDIT
+/* Yichun.Chen PSW.BSP.CHG  2018-05-04  Add for authenticate battery */
+	int			oppo_battery_type;
+#endif
+        
+#ifdef VENDOR_EDIT
+/* Yichun.Chen  PSW.BSP.CHG  2018-06-13  avoid when reboot soc reduce 1% */
+	int			skip_scale_soc_count;
+#endif
+
+#ifdef VENDOR_EDIT
+/* Yichun.Chen  PSW.BSP.CHG  2018-08-23  recognize SDI\ATL battery */
+	int			atl_battery_id_low;
+	int			atl_battery_id_high;
+	int			sdi_battery_id_low;
+	int			sdi_battery_id_high;
+#endif
+};
+
+struct ocv_all {
+	u32 ocv_uv;
+	u32 ocv_raw;
+	char ocv_type[20];
+};
+
+enum ocv_type {
+	S7_PON_OCV,
+	S3_GOOD_OCV,
+	S3_LAST_OCV,
+	SDAM_PON_OCV,
+	PON_OCV_MAX,
+};
+
+enum debug_mask {
+	QG_DEBUG_PON		= BIT(0),
+	QG_DEBUG_PROFILE	= BIT(1),
+	QG_DEBUG_DEVICE		= BIT(2),
+	QG_DEBUG_STATUS		= BIT(3),
+	QG_DEBUG_FIFO		= BIT(4),
+	QG_DEBUG_IRQ		= BIT(5),
+	QG_DEBUG_SOC		= BIT(6),
+	QG_DEBUG_PM		= BIT(7),
+	QG_DEBUG_BUS_READ	= BIT(8),
+	QG_DEBUG_BUS_WRITE	= BIT(9),
+	QG_DEBUG_ALG_CL		= BIT(10),
+};
+
+enum qg_irq {
+	QG_BATT_MISSING_IRQ,
+	QG_VBATT_LOW_IRQ,
+	QG_VBATT_EMPTY_IRQ,
+	QG_FIFO_UPDATE_DONE_IRQ,
+	QG_GOOD_OCV_IRQ,
+	QG_FSM_STAT_CHG_IRQ,
+	QG_EVENT_IRQ,
+	QG_MAX_IRQ,
+};
+
+enum qg_wa_flags {
+	QG_VBAT_LOW_WA = BIT(0),
+	QG_RECHARGE_SOC_WA = BIT(1),
+};
+
+
+#endif /* __QG_CORE_H__ */
